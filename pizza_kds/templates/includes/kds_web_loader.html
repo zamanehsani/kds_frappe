@@ -1,12 +1,12 @@
 <script>
 (function () {
-    if (window.__kds_web_app_loader_installed__) return;
-    window.__kds_web_app_loader_installed__ = true;
+    if (globalThis.__kds_web_app_loader_installed__) return;
+    globalThis.__kds_web_app_loader_installed__ = true;
 
     const DEV_SERVER_ORIGIN = 'http://localhost:5173';
     const MANIFEST_PATH = '/assets/pizza_kds/kds/.vite/manifest.json';
-    const LOADED_STYLE_IDS = new Set(window.__kds_loaded_style_ids__ || []);
-    window.__kds_loaded_style_ids__ = LOADED_STYLE_IDS;
+    const LOADED_STYLE_IDS = new Set(globalThis.__kds_loaded_style_ids__ || []);
+    globalThis.__kds_loaded_style_ids__ = LOADED_STYLE_IDS;
 
     function appendModuleScript(src) {
         const script = document.createElement('script');
@@ -14,6 +14,14 @@
         script.src = src;
         document.head.appendChild(script);
         return script;
+    }
+
+    function canReachDevServer() {
+        return fetch(`${DEV_SERVER_ORIGIN}/@vite/client`, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-store',
+        }).then((response) => response.ok);
     }
 
     function appendStylesheet(href) {
@@ -57,8 +65,17 @@
         appendModuleScript(`/assets/pizza_kds/kds/${entry.file}`);
     }
 
-    loadFromBuiltAssets().catch(() => {
-        loadFromDevServer();
-    });
+    canReachDevServer()
+        .then((isAvailable) => {
+            if (isAvailable) {
+                loadFromDevServer();
+                return;
+            }
+
+            return loadFromBuiltAssets();
+        })
+        .catch(() => {
+            loadFromBuiltAssets();
+        });
 })();
 </script>

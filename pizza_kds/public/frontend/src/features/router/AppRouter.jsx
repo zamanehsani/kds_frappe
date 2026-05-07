@@ -3,6 +3,7 @@ import ProtectedRoute from "../auth/ProtectedRoute";
 import LoginPage from "../auth/components/LoginPage";
 import KDSPage from "../kds/KDSPage";
 import KDSAdminPage from "../kds/KDSAdminPage";
+import POSPage from "../pos/POSPage";
 import { checkFrappeSession, getCurrentAppRoute, goToWebRoute } from "../auth/api/session";
 
 function RouteRedirect({ to }) {
@@ -44,6 +45,18 @@ export default function AppRouter() {
     return (
       <ProtectedRoute redirectTo="/kds/login">
         <KDSAdminPage />
+      </ProtectedRoute>
+    );
+  }
+
+  if (route === "pos_view") {
+    return <RouteRedirect to="/kds/pos" />;
+  }
+
+  if (route === "pos_web") {
+    return (
+      <ProtectedRoute redirectTo="/kds/login">
+        <POSPage />
       </ProtectedRoute>
     );
   }

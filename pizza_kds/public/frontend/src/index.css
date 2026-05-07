@@ -56,6 +56,19 @@
   --color-green-900: #14532d;
   --color-green-950: #052e16;
 
+  /* Olive color scale (warm gray-green) */
+  --color-olive-50: #f8f9f7;
+  --color-olive-100: #e7ece8;
+  --color-olive-200: #d4ddd5;
+  --color-olive-300: #b5c2b7;
+  --color-olive-400: #8a9c8d;
+  --color-olive-500: #6b7d6e;
+  --color-olive-600: #556658;
+  --color-olive-700: #465149;
+  --color-olive-800: #3b453d;
+  --color-olive-900: #323a34;
+  --color-olive-950: #1a1f1b;
+
   /* Brand colors */
   --color-brand-gray: #94A3B8;
   --color-brand-green: #22C55E;
@@ -207,6 +220,16 @@
   .status-badge.completed {
     color: #16a34a;
     background: rgba(22, 163, 74, 0.08);
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
   }
 }
 

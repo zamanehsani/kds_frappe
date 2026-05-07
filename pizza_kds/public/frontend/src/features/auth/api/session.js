@@ -20,6 +20,7 @@ export function getCurrentAppRoute() {
   if (pathname === "/kds/login") return "kds_web_login";
   if (pathname === "/kds/staff") return "kds_web_staff";
   if (pathname === "/kds/admin") return "kds_web_admin";
+  if (pathname === "/kds/pos") return "pos_web";
 
   const segments = pathname.split("/").filter(Boolean);
   return segments.at(-1) || "kds_view";

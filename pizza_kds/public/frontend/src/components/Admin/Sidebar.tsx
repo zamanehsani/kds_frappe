@@ -1,5 +1,6 @@
 import {
   ChefHat,
+  CreditCard,
   History,
   Home,
   LogOut,
@@ -8,12 +9,13 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 
-type NavItemId = "home" | "orders" | "menu" | "history";
+type NavItemId = "home" | "orders" | "menu" | "history" | "pos";
 
-const NAV_ITEMS: { id: NavItemId; label: string; icon: any }[] = [
+const NAV_ITEMS: { id: NavItemId; label: string; icon: any; isExternal?: boolean }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "orders", label: "Orders", icon: ShoppingBag },
   { id: "menu", label: "Menu", icon: UtensilsCrossed },
+  { id: "pos", label: "POS", icon: CreditCard, isExternal: true },
   { id: "history", label: "History", icon: History },
 ];
 interface SidebarProps {
@@ -32,12 +34,18 @@ function Sidebar({ activePage, onNavigate, onLogout }: Readonly<SidebarProps>) {
 
       {/* Nav */}
       <nav className="flex flex-col items-center gap-1 flex-1 w-full px-1.5">
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ id, label, icon: Icon, isExternal }) => {
           const isActive = activePage === id;
           return (
             <button
               key={id}
-              onClick={() => onNavigate(id)}
+              onClick={() => {
+                if (isExternal && id === "pos") {
+                  window.location.href = "/kds/pos";
+                } else {
+                  onNavigate(id);
+                }
+              }}
               title={label}
               className={`flex flex-col items-center justify-center gap-1 w-full py-3 rounded-2xl transition-all duration-200 ${
                 isActive
