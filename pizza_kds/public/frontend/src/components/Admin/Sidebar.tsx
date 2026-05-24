@@ -14,9 +14,9 @@ type NavItemId = "home" | "orders" | "menu" | "history" | "pos";
 const NAV_ITEMS: { id: NavItemId; label: string; icon: any; isExternal?: boolean }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "orders", label: "Orders", icon: ShoppingBag },
-  { id: "menu", label: "Menu", icon: UtensilsCrossed },
-  { id: "pos", label: "POS", icon: CreditCard, isExternal: true },
-  { id: "history", label: "History", icon: History },
+  // { id: "menu", label: "Menu", icon: UtensilsCrossed },
+  // { id: "pos", label: "POS", icon: CreditCard, isExternal: true },
+  // { id: "history", label: "History", icon: History },
 ];
 interface SidebarProps {
   activePage: NavItemId;
@@ -54,7 +54,7 @@ function Sidebar({ activePage, onNavigate, onLogout }: Readonly<SidebarProps>) {
               }`}
             >
               <Icon className="w-5 h-5" strokeWidth={2} />
-              <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
+              <span className="text-[9px] font-normal uppercase tracking-wide leading-none">
                 {label}
               </span>
             </button>
@@ -69,7 +69,7 @@ function Sidebar({ activePage, onNavigate, onLogout }: Readonly<SidebarProps>) {
           className="flex flex-col items-center justify-center gap-1 w-full py-3 rounded-2xl text-olive-300 hover:bg-olive-50 hover:text-olive-600 transition-all duration-200"
         >
           <Settings className="w-5 h-5" strokeWidth={2} />
-          <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
+          <span className="text-[9px] font-normal uppercase tracking-wide leading-none">
             Settings
           </span>
         </button>
@@ -79,7 +79,7 @@ function Sidebar({ activePage, onNavigate, onLogout }: Readonly<SidebarProps>) {
           className="flex flex-col items-center justify-center gap-1 w-full py-3 rounded-2xl text-olive-300 hover:bg-red-50 hover:text-red-500 transition-all duration-200"
         >
           <LogOut className="w-5 h-5" strokeWidth={2} />
-          <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
+          <span className="text-[9px] font-normal uppercase tracking-wide leading-none">
             Logout
           </span>
         </button>

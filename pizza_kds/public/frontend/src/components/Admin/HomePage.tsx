@@ -79,9 +79,9 @@ function HomePage({ orders }: HomePageProps) {
             year: "numeric",
           })}
         </p>
-        <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-olive-900">
+        <p className="mt-1 text-3xl sm:text-5xl font-normal tracking-wide text-olive-900">
           {greeting()}, Admin! Here's today's kitchen.
-        </h1>
+        </p>
       </div>
 
       {/* Stat cards */}
@@ -118,10 +118,10 @@ function HomePage({ orders }: HomePageProps) {
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-xs font-black uppercase tracking-wide text-olive-400">
+                <div className="text-base font-normal uppercase tracking-wide text-olive-400">
                   {label}
                 </div>
-                <div className="mt-2 text-3xl font-black tracking-tight text-olive-900">
+                <div className="mt-2 text-3xl font-normal tracking-wide text-olive-900">
                   {value}
                 </div>
               </div>
@@ -136,12 +136,12 @@ function HomePage({ orders }: HomePageProps) {
       {/* Grid: recent orders + status mix */}
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
         <div className="rounded-[2rem] border border-olive-100 bg-white p-6 shadow-sm">
-          <div className="text-xs font-black uppercase tracking-wide text-olive-400">
+          <div className="text-base font-normal uppercase tracking-wide text-olive-400">
             Live Order Feed
           </div>
-          <h2 className="mt-1 text-xl font-black text-olive-900 mb-5">
+          <p className="mt-1 text-3xl font-normal text-olive-900 mb-5">
             Recent KOT activity
-          </h2>
+          </p>
           <div className="space-y-2.5">
             {recent.length === 0 && (
               <p className="text-center text-olive-300 text-sm py-8">
@@ -154,16 +154,16 @@ function HomePage({ orders }: HomePageProps) {
                 className="rounded-2xl border border-olive-100 px-4 py-3 flex items-center justify-between gap-3"
               >
                 <div>
-                  <div className="text-sm font-black text-olive-900">
+                  <div className="text-sm font-normal text-olive-900">
                     #{o.name.split("-").pop()}
                   </div>
-                  <div className="text-xs text-olive-400 mt-0.5">
+                  <div className="text-base text-olive-400 mt-0.5">
                     {o.customer || "Guest User"}
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span
-                    className={`text-xs font-black uppercase tracking-wide px-2.5 py-1 rounded-full ${statusBadge(
+                    className={`text-base font-normal uppercase tracking-wide px-2.5 py-1 rounded-full ${statusBadge(
                       normaliseStatus(o.status)
                     )}`}
                   >
@@ -187,12 +187,12 @@ function HomePage({ orders }: HomePageProps) {
         </div>
 
         <div className="rounded-[2rem] border border-olive-100 bg-white p-6 shadow-sm">
-          <div className="text-xs font-black uppercase tracking-wide text-olive-400">
+          <div className="text-base font-normal uppercase tracking-wide text-olive-400">
             Status Mix
           </div>
-          <h2 className="mt-1 text-xl font-black text-olive-900 mb-5">
+          <p className="mt-1 text-3xl font-normal text-olive-900 mb-5">
             Kitchen state
-          </h2>
+          </p>
           <div className="space-y-4">
             {[
               ["New", summary.new, "bg-purple-500"],
@@ -206,8 +206,8 @@ function HomePage({ orders }: HomePageProps) {
                   : 0;
               return (
                 <div key={label}>
-                  <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="font-bold text-olive-700">{label}</span>
+                  <div className="mb-1.5 flex items-center justify-between text-base">
+                    <span className="font-normal text-olive-700">{label}</span>
                     <span className="text-olive-400">
                       {value} • {pct}%
                     </span>

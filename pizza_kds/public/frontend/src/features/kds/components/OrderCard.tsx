@@ -20,8 +20,9 @@ const OrderCard: React.FC<OrderCardProps> = ({
   onBump,
   onOpenDetail,
 }) => {
-  const COOKING_DURATION_MS = 20 * 60 * 1000;
-
+  const maxPrepMins =
+    order.items?.reduce((max, item) => Math.max(max, item.prep_time ?? 0), 0) || 20;
+  const COOKING_DURATION_MS = maxPrepMins * 60 * 1000;
   const rawStatus = order.status?.toLowerCase() || "new";
   const status =
     rawStatus === "pending"
@@ -140,11 +141,11 @@ const OrderCard: React.FC<OrderCardProps> = ({
         <div className="mb-4">
           {/* Row 1: Customer + Order ID */}
           <div className="flex items-center justify-between gap-3">
-            <h4 className="m-0 flex-1 min-w-0 text-olive-900 !text-xl sm:text-xl md:text-1xl leading-tight truncate">
+            <p className="m-0 flex-1 min-w-0 text-olive-900 !text-xl sm:text-xl md:text-1xl leading-tight truncate">
               {order.customer || "Guest User"}
-            </h4>
+            </p>
 
-            <span className="flex-shrink-0 text-olive-600 font-semibold text-xs sm:text-sm tracking-wider whitespace-nowrap">
+            <span className="flex-shrink-0 text-olive-600 font-normal text-xs sm:text-sm lg:text-base tracking-wider whitespace-nowrap">
               #{order.name.split("-").pop()}
             </span>
           </div>
@@ -153,7 +154,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
           <div className="flex flex-wrap items-center gap-2 mt-2">
             <span
               onClick={(e) => e.stopPropagation()}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusConfig.colors}`}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-normal uppercase tracking-wide ${statusConfig.colors}`}
             >
               <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
               {statusConfig.label}
@@ -161,7 +162,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
             {isCooking && (
               <span
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide"
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-normal uppercase tracking-wide"
                 style={{
                   backgroundColor: `${timerColor}14`,
                   color: timerColor,
@@ -175,7 +176,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
         </div>
 
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-2 pb-3 border-b border-olive-100 border-dashed-sm">
-          <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-medium">
+          <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-normal">
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-olive-400"
               fill="none"
@@ -199,7 +200,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
               })}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-medium">
+          <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-normal">
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-olive-400"
               fill="none"
@@ -241,7 +242,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     {item.qty} <span className="lowercase">x</span>
                   </span>
                   <span className="text-sm sm:text-base lg:text-xl tracking-tight">
-                    {item.item_code}
+                    {item.item_name || item.item_code}
                   </span>
                 </span>
                 {item.price != null && (
@@ -258,7 +259,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 e.stopPropagation();
                 onOpenDetail?.();
               }}
-              className="text-brand-green text-sm sm:text-base font-bold mt-3 sm:mt-4 flex items-center gap-1.5 hover:gap-2.5 transition-all hover:underline group/more"
+              className="text-brand-green text-sm sm:text-base font-normal mt-3 sm:mt-4 flex items-center gap-1.5 hover:gap-2.5 transition-all hover:underline group/more"
             >
               <span>+{order.items.length - 3} more items</span>
               <svg
@@ -285,14 +286,18 @@ const OrderCard: React.FC<OrderCardProps> = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (status !== "completed") onBump(order.name);
+                  if (status === "cooking") {
+                    onOpenDetail?.();
+                  } else if (status !== "completed") {
+                    onBump(order.name);
+                  }
                 }}
                 disabled={status === "completed"}
-                className={`w-full sm:w-auto sm:self-start rounded-lg flex items-center justify-center gap-2.5 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-3 rounded-xl text-sm sm:text-base md:text-lg font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:shadow-lg shadow-md ${actionConfig.colors}`}
+                className={`w-full sm:w-auto sm:self-start rounded-lg flex items-center justify-center gap-2.5 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-3 rounded-xl text-sm sm:text-base md:text-lg font-normal uppercase tracking-wider transition-all duration-200 active:scale-95 hover:shadow-lg shadow-md ${actionConfig.colors}`}
               >
                 <ActionIcon
                   className="w-5 h-5 sm:w-6 sm:h-6"
-                  strokeWidth={2.5}
+                  strokeWidth={2}
                 />
                 <span>{actionConfig.label}</span>
               </button>

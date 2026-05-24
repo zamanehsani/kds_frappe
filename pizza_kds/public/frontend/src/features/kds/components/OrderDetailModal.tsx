@@ -20,12 +20,113 @@ interface OrderDetailModalProps {
   onBump: (name: string) => void;
 }
 
+const stripHtml = (value: string) =>
+  value
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const formatAddonValue = (value: unknown): string => {
+  if (typeof value === "string") return value.trim();
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+
+  const addon = value as Record<string, unknown>;
+  const baseValue =
+    addon.name ??
+    addon.item_name ??
+    addon.item_code ??
+    addon.addon_name ??
+    addon.label ??
+    addon.title;
+
+  const base = typeof baseValue === "string" ? baseValue.trim() : "";
+  if (!base) return "";
+
+  const qtyValue = addon.qty;
+  const parsedQty =
+    typeof qtyValue === "number"
+      ? qtyValue
+      : typeof qtyValue === "string" && qtyValue.trim()
+      ? Number(qtyValue)
+      : null;
+
+  if (parsedQty && Number.isFinite(parsedQty) && parsedQty > 1) {
+    return `${base} x${parsedQty}`;
+  }
+
+  return base;
+};
+
+const parseSelectedAddons = (rawAddons: unknown): string[] => {
+  if (rawAddons == null) return [];
+
+  if (Array.isArray(rawAddons)) {
+    return Array.from(
+      new Set(rawAddons.flatMap((addon) => parseSelectedAddons(addon)))
+    );
+  }
+
+  if (typeof rawAddons === "object") {
+    const value = formatAddonValue(rawAddons);
+    if (value) return [value];
+
+    return Array.from(
+      new Set(
+        Object.values(rawAddons as Record<string, unknown>).flatMap((item) =>
+          parseSelectedAddons(item)
+        )
+      )
+    );
+  }
+
+  if (typeof rawAddons !== "string") return [];
+
+  const text = rawAddons.trim();
+  if (!text) return [];
+
+  const lower = text.toLowerCase();
+  if (
+    lower === "null" ||
+    lower === "none" ||
+    lower === "undefined" ||
+    lower === "[]"
+  ) {
+    return [];
+  }
+
+  const parseAsJson = (value: string): string[] | null => {
+    try {
+      return parseSelectedAddons(JSON.parse(value));
+    } catch {
+      return null;
+    }
+  };
+
+  const parsedJson = parseAsJson(text);
+  if (parsedJson) return parsedJson;
+
+  if ((text.startsWith("[") || text.startsWith("{")) && text.includes("'")) {
+    const relaxedJson = parseAsJson(text.replace(/'/g, '"'));
+    if (relaxedJson) return relaxedJson;
+  }
+
+  return Array.from(
+    new Set(
+      text
+        .split(/\r?\n|,|\|/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  );
+};
+
 const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   order,
   onClose,
   onBump,
 }) => {
   const rawStatus = order.status?.toLowerCase() || "new";
+  console.log("order detail: ", order);
   const status =
     rawStatus === "pending"
       ? "new"
@@ -33,6 +134,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
       ? "cooking"
       : rawStatus;
 
+      console.log("order : ", order);
   const getStatusConfig = () => {
     switch (status) {
       case "cooking":
@@ -102,19 +204,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const statusConfig = getStatusConfig();
   const actionConfig = getActionConfig();
   const StatusIcon = statusConfig.icon;
-  const [completedItems, setCompletedItems] = useState(new Set());
+  const [completedItems, setCompletedItems] = useState<Set<number>>(new Set());
   const canMarkItemsDone = status === "cooking";
-  const notedItems = (order.items || [])
-    .map((item, index) => ({
-      index,
-      itemCode: item.item_code,
-      qty: item.qty,
-      note: item.notes
-        ?.replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim(),
-    }))
-    .filter((item) => item.note);
 
   const orderDate = new Date(order.created_ts);
   const orderTimeStr = orderDate.toLocaleTimeString([], {
@@ -132,7 +223,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   }, [order.name]);
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
 
@@ -145,7 +236,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     };
   }, [onClose]);
 
-  const toggleItemDone = (itemIndex) => {
+  const toggleItemDone = (itemIndex: number) => {
     if (!canMarkItemsDone) return;
 
     setCompletedItems((prev) => {
@@ -185,7 +276,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <Hash className="w-4 h-4" strokeWidth={2.5} />
             </div>
             <div>
-              <div className="text-olive-900 font-black text-base sm:text-lg">
+              <div className="text-olive-900 font-normal text-base sm:text-lg lg:text-xl">
                 {order.customer || "Guest User"}
               </div>
               <div className="text-olive-400 text-xs sm:text-sm">
@@ -196,7 +287,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
           <div className="flex items-center gap-2 sm:gap-3">
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusConfig.colors}`}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-normal uppercase tracking-wide ${statusConfig.colors}`}
             >
               <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
               {statusConfig.label}
@@ -217,7 +308,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="mb-4 sm:mb-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <div className="text-xs sm:text-sm font-black text-olive-800 uppercase tracking-wide">
+                    <div className="text-xl sm:text-xl font-normal text-olive-800 uppercase tracking-wide">
                       List Item ({order.items?.length || 0})
                     </div>
                     <div className="text-olive-400 text-xs sm:text-sm mt-1">
@@ -228,7 +319,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   </div>
                   {canMarkItemsDone && order.items?.length > 0 && (
                     <div className="text-right">
-                      <div className="text-olive-900 text-sm font-black">
+                      <div className="text-olive-900 text-sm font-normal">
                         {completedItems.size}/{order.items.length}
                       </div>
                       <div className="text-olive-400 text-xs">done</div>
@@ -236,75 +327,102 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   )}
                 </div>
                 <ul className="space-y-3 max-h-72 overflow-y-auto pr-2 ">
-                  {order.items?.map((item, i) => (
-                    <li
-                      key={i}
-                      className={`rounded-2xl overflow-hidden transition-all duration-300 ${
-                        completedItems.has(i)
-                          ? "border border-green-200 bg-green-50/80 shadow-sm"
-                          : "border border-olive-100 bg-white hover:border-olive-200 hover:shadow-sm"
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleItemDone(i)}
-                        disabled={!canMarkItemsDone}
-                        className={`w-full flex items-center gap-3 px-3 py-3 text-left ${
-                          canMarkItemsDone
-                            ? "cursor-pointer"
-                            : "cursor-not-allowed opacity-80"
+                  {order.items?.map((item, i) => {
+                    const addonLabels = parseSelectedAddons(
+                      item.custom_selected_addons
+                    );
+
+                    return (
+                      <li
+                        key={i}
+                        className={`rounded-2xl overflow-hidden transition-all duration-300 ${
+                          completedItems.has(i)
+                            ? "border border-green-200 bg-green-50/80 shadow-sm"
+                            : "border border-olive-100 bg-white hover:border-olive-200 hover:shadow-sm"
                         }`}
                       >
-                        <span
-                          className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                            completedItems.has(i)
-                              ? "border-green-500 bg-green-500 text-white scale-110"
-                              : canMarkItemsDone
-                              ? "border-olive-300 bg-white text-transparent"
-                              : "border-olive-200 bg-olive-50 text-transparent"
+                        <button
+                          type="button"
+                          onClick={() => toggleItemDone(i)}
+                          disabled={!canMarkItemsDone}
+                          className={`w-full flex items-center gap-3 px-3 py-3 text-left ${
+                            canMarkItemsDone
+                              ? "cursor-pointer"
+                              : "cursor-not-allowed opacity-80"
                           }`}
                         >
-                          <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                        </span>
-
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className={`text-sm sm:text-base font-semibold leading-tight transition-all duration-300 ${
+                          <span
+                            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${
                               completedItems.has(i)
-                                ? "text-olive-500 line-through"
-                                : "text-olive-900"
+                                ? "border-green-500 bg-green-500 text-white scale-110"
+                                : canMarkItemsDone
+                                ? "border-olive-300 bg-white text-transparent"
+                                : "border-olive-200 bg-olive-50 text-transparent"
                             }`}
                           >
-                            {item.item_code}
-                          </div>
-                          {item.notes && (
-                            <div
-                              className={`text-xs sm:text-sm mt-1 line-clamp-2 transition-all duration-300 ${
-                                completedItems.has(i)
-                                  ? "text-olive-300"
-                                  : "text-olive-400"
-                              }`}
-                              dangerouslySetInnerHTML={{
-                                __html: item.notes
-                                  .replace(/<[^>]+>/g, " ")
-                                  .trim(),
-                              }}
-                            />
-                          )}
-                        </div>
+                            <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                          </span>
 
-                        <span
-                          className={`text-xs font-bold whitespace-nowrap px-2.5 py-1 rounded-full transition-all duration-300 ${
-                            completedItems.has(i)
-                              ? "bg-green-100 text-green-700"
-                              : "bg-olive-50 text-olive-500"
-                          }`}
-                        >
-                          ×{item.qty}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className={`text-sm sm:text-base font-normal leading-tight transition-all tracking-wide duration-300 ${
+                                completedItems.has(i)
+                                  ? "text-olive-500 line-through"
+                                  : "text-olive-900"
+                              }`}
+                            >
+                              {item.item_name || item.item_code}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              {item.prep_time != null && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 border border-orange-100 px-2 py-0.5 text-[11px] font-bold text-orange-600 uppercase tracking-wide">
+                                  <ChefHat className="w-3 h-3" strokeWidth={2.5} />
+                                  {item.prep_time}m
+                                </span>
+                              )}
+                            </div>
+                            {addonLabels.length > 0 && (
+                              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                {addonLabels.map((addonLabel, addonIndex) => (
+                                  <span
+                                    key={`${item.item_code}-addon-${addonIndex}`}
+                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-normal uppercase tracking-wide transition-all duration-300 ${
+                                      completedItems.has(i)
+                                        ? "border-green-200 bg-green-100 text-green-700"
+                                        : "border-cyan-200 bg-cyan-50 text-cyan-700"
+                                    }`}
+                                  >
+                                    {addonLabel}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {item.description && (
+                              <div
+                                className={`text-xs sm:text-sm mt-1 line-clamp-2 transition-all duration-300 ${
+                                  completedItems.has(i)
+                                    ? "text-olive-300"
+                                    : "text-olive-400"
+                                }`}
+                              >
+                                {stripHtml(item.description)}
+                              </div>
+                            )}
+                          </div>
+
+                          <span
+                            className={`text-base font-normal whitespace-nowrap px-2.5 py-1 rounded-full transition-all duration-300 ${
+                              completedItems.has(i)
+                                ? "bg-green-100 text-green-700"
+                                : "bg-olive-50 text-olive-500"
+                            }`}
+                          >
+                            ×{item.qty}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -324,7 +442,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                       disabled={
                         status === "completed" || (isCooking && !allItemsDone)
                       }
-                      className={`w-full sm:w-auto !rounded-3xl flex items-center justify-center gap-2.5 px-4 sm:px-6 py-3 text-sm sm:text-base font-bold uppercase tracking-wider transition-all duration-200 shadow-sm
+                      className={`w-full sm:w-auto !rounded-3xl flex items-center justify-center gap-2.5 px-4 sm:px-6 py-3 text-sm sm:text-base font-normal uppercase tracking-wider transition-all duration-200 shadow-sm
                         ${
                           status === "completed" || (isCooking && !allItemsDone)
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -339,7 +457,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             </div>
 
             <div className="px-5 sm:px-7 py-5 sm:py-6 bg-olive-50/35">
-              <div className="text-xs sm:text-sm font-black text-olive-800 uppercase tracking-wide mb-4">
+              <div className="text-xl sm:text-xl font-normal text-olive-800 uppercase tracking-wide mb-4">
                 Order Summary
               </div>
 
@@ -349,7 +467,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <User className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm">Name</span>
                   </div>
-                  <span className="text-olive-900 text-xs sm:text-sm font-semibold text-right break-all">
+                  <span className="text-olive-900 text-xs sm:text-sm font-normal text-right break-all">
                     {order.customer || "Guest User"}
                   </span>
                 </div>
@@ -359,7 +477,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm">Order time</span>
                   </div>
-                  <span className="text-olive-900 text-xs sm:text-sm font-semibold text-right">
+                  <span className="text-olive-900 text-xs sm:text-sm font-normal text-right">
                     {orderDateStr}, {orderTimeStr}
                   </span>
                 </div>
@@ -369,7 +487,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm">Order Type</span>
                   </div>
-                  <span className="text-olive-900 text-xs sm:text-sm font-semibold text-right">
+                  <span className="text-olive-900 text-xs sm:text-sm font-normal text-right">
                     {order.table_no
                       ? `Dine in | ${order.table_no}`
                       : order.order_type || "Takeaway"}
@@ -381,43 +499,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     <Hash className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm">Items</span>
                   </div>
-                  <span className="text-olive-900 text-xs sm:text-sm font-semibold">
+                  <span className="text-olive-900 text-xs sm:text-sm font-normal">
                     {order.items?.length || 0}
                   </span>
                 </div>
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-olive-100 bg-white px-4 py-4">
-                <div className="text-xs sm:text-sm font-black text-olive-800 uppercase tracking-wide mb-3">
-                  Customer Notes
-                </div>
-
-                {notedItems.length > 0 ? (
-                  <div className="space-y-3 max-h-52 overflow-y-auto pr-1">
-                    {notedItems.map((item) => (
-                      <div
-                        key={`${item.itemCode}-${item.index}`}
-                        className="rounded-xl bg-amber-50/70 border border-amber-100 px-3 py-3"
-                      >
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <span className="text-olive-900 text-xs sm:text-sm font-bold">
-                            {item.itemCode}
-                          </span>
-                          <span className="text-amber-700 text-[11px] font-black uppercase tracking-wide">
-                            x{item.qty}
-                          </span>
-                        </div>
-                        <p className="text-olive-500 text-xs sm:text-sm leading-relaxed">
-                          {item.note}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-olive-400 text-xs sm:text-sm leading-relaxed">
-                    No special customer notes were added for this KOT.
-                  </p>
-                )}
               </div>
             </div>
           </div>

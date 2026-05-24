@@ -33,6 +33,7 @@ export default function KDSPage() {
     return () => clearInterval(interval);
   }, []);
 
+
   const counts = useMemo(() => {
     const result = {
       all: orders.length,
