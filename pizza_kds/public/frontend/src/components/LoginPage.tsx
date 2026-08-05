@@ -63,7 +63,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <ChefHat className="w-8 h-8 text-white" strokeWidth={2} />
           </div>
           <h1 className="text-2xl font-black text-olive-900 tracking-tight">
-            Kitchen Display
+            Kabab Alrayhan KDS
           </h1>
           <p className="text-sm text-olive-400 mt-1">
             Sign in to your KDS account
@@ -144,7 +144,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-brand-green hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wider py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] mt-2"
+              className="w-full flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wider py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] mt-2"
             >
               {loading ? (
                 <svg

@@ -71,6 +71,8 @@ export const useKDS = () => {
 					const formatted = r.message.map((o) =>
 						withCookingTimer({
 							...o,
+							custom_payment_method: o.custom_payment_method,
+							custom_payment_status: o.custom_payment_status,
 							created_ts: new Date(o.creation).getTime(),
 						})
 					);
@@ -83,30 +85,38 @@ export const useKDS = () => {
 		globalThis.frappe.realtime.on("new_kot", (msg) => {
 			console.log("🔔 New KOT received:", msg.name);
 
-			// --- TRIGGER SOUND IMMEDIATELY ---
+
+
 			if (audioPlayer.current) {
-				audioPlayer.current.currentTime = 0;
-				audioPlayer.current
-					.play()
-					.catch((err) => {
-						console.warn(
-							"🔇 Audio blocked. Click anywhere on the screen to enable sounds.",
-							err
-						);
-					});
-			}
+                audioPlayer.current.currentTime = 0;
+                audioPlayer.current
+                    .play()
+                    .catch((err) => {
+                        console.warn(
+                            "🔇 Audio blocked. Click anywhere on the screen to enable sounds.",
+                            err
+                        );
+                    });
+            }
 
-			// Update state to show the new card
+
 			setOrders((prev) => {
-				// Prevent duplicate entries
-				if (prev.some((o) => o.name === msg.name)) return prev;
+                const exists = prev.some((o) => o.name === msg.name);
 
-				const newOrder = withCookingTimer({
-					...msg,
-					created_ts: new Date(msg.creation).getTime(),
-				});
-				return [newOrder, ...prev];
-			});
+                const updatedOrder = withCookingTimer({
+                    ...msg,
+                    custom_payment_method: msg.custom_payment_method,
+                    custom_payment_status: msg.custom_payment_status,
+                    created_ts: msg.creation ? new Date(msg.creation).getTime() : Date.now(),
+                });
+
+                if (exists) {
+                    // This block now swaps out data for already existing array items reactively
+                    return prev.map((o) => (o.name === msg.name ? updatedOrder : o));
+                } else {
+                    return [updatedOrder, ...prev];
+                }
+            });
 		});
 
 		// Cleanup socket listener on unmount

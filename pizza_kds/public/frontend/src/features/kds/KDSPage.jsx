@@ -28,6 +28,53 @@ export default function KDSPage() {
   const [isDateFilterActive, setIsDateFilterActive] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
+
+
+
+  useEffect(() => {
+    let wakeLock = null;
+
+    const requestWakeLock = async () => {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+          console.log("[KDS] Screen Wake Lock activated");
+
+          wakeLock.addEventListener("release", () => {
+            console.log("[KDS] Screen Wake Lock released");
+          });
+        } else {
+          console.warn("[KDS] Screen Wake Lock API not supported in this browser");
+        }
+      } catch (err) {
+        console.error(`[KDS] Wake Lock Error: ${err.name}, ${err.message}`);
+      }
+    };
+
+    // Request lock when page mounts
+    requestWakeLock();
+
+    // Re-request lock if kitchen staff tab-switches or minimizes and returns
+    const handleVisibilityChange = async () => {
+      if (wakeLock !== null && document.visibilityState === "visible") {
+        await requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup when component unmounts (leaving KDS screen)
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+          wakeLock = null;
+        });
+      }
+    };
+  }, []);
+
+  
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);

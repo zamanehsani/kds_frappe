@@ -5,7 +5,9 @@ import {
   CircleCheckBig,
   Sparkles,
   Play,
+  CheckCircle2,
   Check,
+  XCircle
 } from "lucide-react";
 import { Order } from "../../../types";
 
@@ -88,7 +90,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
         };
       case "completed":
         return {
-          label: "Archived",
+          label: "Completed",
           icon: CircleCheckBig,
           colors: "bg-slate-100 !text-slate-400 border-0 cursor-not-allowed",
         };
@@ -131,6 +133,11 @@ const OrderCard: React.FC<OrderCardProps> = ({
         )}m left`
       : "Over time";
 
+
+ // Normalise payment tracking status attributes safely
+  const paymentStatus = order.custom_payment_status || "Unpaid";
+  const isPaid = paymentStatus.toLowerCase() === "paid";
+  
   return (
     <div
       onClick={onOpenDetail}
@@ -158,6 +165,21 @@ const OrderCard: React.FC<OrderCardProps> = ({
             >
               <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
               {statusConfig.label}
+            </span>
+
+            {/* Payment Status Badge */}
+             <span
+               onClick={(e) => e.stopPropagation()}
+               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium tracking-wide ${
+                 isPaid ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-600"
+               }`}
+             >
+               {isPaid ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" strokeWidth={2.5} />
+               ) : (
+                 <XCircle className="w-3.5 h-3.5 text-red-600" strokeWidth={2.5} />
+               )}
+              {paymentStatus}
             </span>
 
             {isCooking && (

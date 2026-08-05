@@ -17,12 +17,14 @@ export type OrderItemAddons =
   | null;
 
 export interface OrderItem {
+  name: string;
   item_code: string;
   item_name?: string;
   qty: number;
-  price?: number;   // not present on KOT — only on Sales Order
+  price?: number;
   description?: string;
   prep_time?: number | null;
+  is_completed?: number | boolean;
   custom_selected_addons?: OrderItemAddons;
 }
 
@@ -37,5 +39,8 @@ export interface Order {
   table_no?: string;    // set when order_type is "Dine In"
   sales_order?: string;
   items: OrderItem[];
-  total_amount?: number; // not present on KOT
+  custom_payment_method?: string;
+  custom_payment_status?: string;
+  total_amount?: number;
+  custom_customer_note?: string; 
 }

@@ -8,6 +8,7 @@ import {
   EyeOff,
   AlertCircle,
 } from "lucide-react";
+import logoImg from "../../../assets/logo.png";
 
 interface LoginPageProps {
   onLogin: (role: "staff" | "admin") => void;
@@ -49,9 +50,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         const clean =
           typeof msg === "string"
             ? msg
-                .replace(/<[^>]+>/g, "")
-                .replace(/\\n/g, " ")
-                .trim()
+              .replace(/<[^>]+>/g, "")
+              .replace(/\\n/g, " ")
+              .trim()
             : "Invalid email or password.";
         setError(clean || "Invalid email or password.");
       }
@@ -68,12 +69,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
       <div className="relative w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-brand-green rounded-2xl flex items-center justify-center shadow-lg mb-4">
-            <ChefHat className="w-8 h-8 text-white" strokeWidth={2} />
+          <div className="w-32 h-32 relative flex items-center justify-center mb-2">
+            <img
+              src={logoImg}
+              alt="Kabab Alrayhan Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-black text-olive-900 tracking-tight">
-            Pizza.ae
-          </h1>
           <p className="text-sm text-olive-400 mt-1">
             Sign in to your KDS account
           </p>
@@ -83,22 +85,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <button
             type="button"
             onClick={() => setRole("staff")}
-            className={`flex-1 py-2 text-sm font-bold uppercase tracking-wide transition-colors ${
-              role === "staff"
-                ? "bg-brand-green text-white"
-                : "bg-white text-olive-400 hover:bg-olive-50"
-            }`}
+            className={`flex-1 py-2 text-sm font-bold uppercase tracking-wide transition-colors ${role === "staff"
+              ? "bg-red-600 text-white"
+              : "bg-white text-olive-400 hover:bg-olive-50"
+              }`}
           >
             Staff
           </button>
           <button
             type="button"
             onClick={() => setRole("admin")}
-            className={`flex-1 py-2 text-sm font-bold uppercase tracking-wide transition-colors ${
-              role === "admin"
-                ? "bg-brand-green text-white"
-                : "bg-white text-olive-400 hover:bg-olive-50"
-            }`}
+            className={`flex-1 py-2 text-sm font-bold uppercase tracking-wide transition-colors ${role === "admin"
+              ? "bg-red-600 text-white"
+              : "bg-white text-olive-400 hover:bg-olive-50"
+              }`}
           >
             Admin
           </button>
@@ -133,7 +133,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   disabled={loading}
-                  className="w-full pl-9 pr-4 py-3 rounded-xl border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all disabled:opacity-50"
+                  className="w-full pl-9 pr-4 py-3 rounded-xl border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all disabled:opacity-50"
                 />
               </div>
             </div>
@@ -155,7 +155,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={loading}
-                  className="w-full pl-9 pr-10 py-3 rounded-xl border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent transition-all disabled:opacity-50"
+                  className="w-full pl-9 pr-10 py-3 rounded-xl border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -176,7 +176,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-brand-green hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wider py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] mt-2"
+              className="w-full flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wider py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] mt-2"
             >
               {loading ? (
                 <svg
