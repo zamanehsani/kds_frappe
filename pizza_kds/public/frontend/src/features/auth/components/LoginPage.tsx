@@ -66,22 +66,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(34,197,94,0.04)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.04)_0%,transparent_50%)] pointer-events-none" />
-
       <div className="relative w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-32 h-32 relative flex items-center justify-center mb-2">
+          <div className="w-36 relative flex items-center justify-center mb-2">
             <img
               src={logoImg}
               alt="Kabab Alrayhan Logo"
               className="w-full h-full object-contain"
             />
           </div>
-          <p className="text-sm text-olive-400 mt-1">
+          {/* <p className="text-sm text-olive-400 mt-1">
             Sign in to your KDS account
-          </p>
+          </p> */}
         </div>
 
-        <div className="flex rounded-xl border border-olive-200 overflow-hidden mb-6">
+        {/* <div className="flex rounded-xl border border-olive-200 overflow-hidden mb-6">
           <button
             type="button"
             onClick={() => setRole("staff")}
@@ -102,82 +101,77 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           >
             Admin
           </button>
-        </div>
+        </div> */}
 
-        <div className="bg-white border border-olive-200 rounded-2xl shadow-sm p-6 sm:p-8">
+        <div className="bg-white p-6 sm:p-8">
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {error && (
-              <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-3.5 py-3 text-sm">
+              <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-700 !rounded-full px-3.5 py-3 text-sm">
                 <AlertCircle
-                  className="w-4 h-4 flex-shrink-0 mt-0.5"
-                  strokeWidth={2.5}
+                  className="w-5 h-5 flex-shrink-0"
+                  strokeWidth={2}
                 />
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label
+              {/* <label
                 htmlFor="kds-email"
                 className="text-xs font-bold text-olive-700 uppercase tracking-wide"
               >
                 Email
-              </label>
+              </label> */}
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-olive-300 pointer-events-none" />
-                <input
-                  id="kds-email"
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-olive-300 pointer-events-none" />
+                <input id="kds-email"
                   type="email"
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="email or username here"
                   disabled={loading}
-                  className="w-full pl-9 pr-4 py-3 rounded-xl border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all disabled:opacity-50"
+                  className="w-full pl-9 pr-4 py-3 rounded-full border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-transparent transition-all disabled:opacity-50"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label
+              {/* <label
                 htmlFor="kds-password"
                 className="text-xs font-bold text-olive-700 uppercase tracking-wide"
               >
                 Password
-              </label>
+              </label> */}
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-olive-300 pointer-events-none" />
-                <input
-                  id="kds-password"
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-olive-300 pointer-events-none" />
+                <input id="kds-password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="password here"
                   disabled={loading}
-                  className="w-full pl-9 pr-10 py-3 rounded-xl border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all disabled:opacity-50"
+                  className="w-full pl-9 pr-10 py-3 rounded-full border border-olive-200 bg-white text-olive-900 text-sm placeholder-olive-300 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-transparent transition-all disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-olive-300 hover:text-olive-500 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 !rounded-full text-olive-300 hover:text-olive-500 transition-colors"
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wider py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98] mt-2"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 !rounded-full shadow hover:shadow-md transition-all duration-200 active:scale-[0.98] mt-2">
               {loading ? (
                 <svg
                   className="w-4 h-4 animate-spin"

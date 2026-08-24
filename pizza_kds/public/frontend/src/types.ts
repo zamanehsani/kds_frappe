@@ -23,6 +23,7 @@ export interface OrderItem {
   qty: number;
   price?: number;
   description?: string;
+  notes?: string;
   prep_time?: number | null;
   is_completed?: number | boolean;
   custom_selected_addons?: OrderItemAddons;

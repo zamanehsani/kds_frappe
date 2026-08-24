@@ -20,17 +20,17 @@ function AuthLoadingScreen() {
 }
 
 export default function AuthGate({ children }) {
-  const [authState, setAuthState] = useState("loading");
+  const [authState, setAuthState] = useState(() => {
+    const frappeUser = globalThis.frappe?.session?.user;
+    return frappeUser && frappeUser !== "Guest" ? "user" : "loading";
+  });
+  const shouldCheckSession = authState === "loading";
 
   useEffect(() => {
-    const frappeUser = globalThis.frappe?.session?.user;
-    if (frappeUser && frappeUser !== "Guest") {
-      setAuthState("user");
-      return;
+    if (shouldCheckSession) {
+      checkFrappeSession().then((ok) => setAuthState(ok ? "user" : "guest"));
     }
-
-    checkFrappeSession().then((ok) => setAuthState(ok ? "user" : "guest"));
-  }, []);
+  }, [shouldCheckSession]);
 
   if (authState === "loading") {
     return <AuthLoadingScreen />;

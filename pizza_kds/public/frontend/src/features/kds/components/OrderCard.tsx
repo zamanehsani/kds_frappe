@@ -22,6 +22,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
   onBump,
   onOpenDetail,
 }) => {
+
   const maxPrepMins =
     order.items?.reduce((max, item) => Math.max(max, item.prep_time ?? 0), 0) || 20;
   const COOKING_DURATION_MS = maxPrepMins * 60 * 1000;
@@ -137,7 +138,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
  // Normalise payment tracking status attributes safely
   const paymentStatus = order.custom_payment_status || "Unpaid";
   const isPaid = paymentStatus.toLowerCase() === "paid";
-  
+
   return (
     <div
       onClick={onOpenDetail}
@@ -159,21 +160,15 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
           {/* Row 2: Badges */}
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            <span
-              onClick={(e) => e.stopPropagation()}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-normal uppercase tracking-wide ${statusConfig.colors}`}
-            >
+            <span  onClick={(e) => e.stopPropagation()}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-normal uppercase tracking-wide ${statusConfig.colors}`} >
               <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
               {statusConfig.label}
             </span>
 
             {/* Payment Status Badge */}
-             <span
-               onClick={(e) => e.stopPropagation()}
-               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium tracking-wide ${
-                 isPaid ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-600"
-               }`}
-             >
+             <span onClick={(e) => e.stopPropagation()}
+               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium tracking-wide ${isPaid ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-600"}`}>
                {isPaid ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" strokeWidth={2.5} />
                ) : (
@@ -183,14 +178,9 @@ const OrderCard: React.FC<OrderCardProps> = ({
             </span>
 
             {isCooking && (
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-normal uppercase tracking-wide"
-                style={{
-                  backgroundColor: `${timerColor}14`,
-                  color: timerColor,
-                }}
-              >
-                <ChefHat className="w-3 h-3" strokeWidth={2.5} />
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-normal uppercase tracking-wide"
+                style={{backgroundColor: `${timerColor}14`, color: timerColor}}>
+                <ChefHat className="w-3 h-3" strokeWidth={2.5}/>
                 {cookingLabel}
               </span>
             )}
@@ -201,10 +191,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
           <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-normal">
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-olive-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -225,10 +212,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
           <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-normal">
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-olive-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -284,12 +268,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
               className="text-brand-green text-sm sm:text-base font-normal mt-3 sm:mt-4 flex items-center gap-1.5 hover:gap-2.5 transition-all hover:underline group/more"
             >
               <span>+{order.items.length - 3} more items</span>
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 group-hover/more:tranolive-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover/more:tranolive-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -305,8 +284,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
           (() => {
             const ActionIcon = actionConfig.icon;
             return (
-              <button
-                onClick={(e) => {
+              <button onClick={(e) => {
                   e.stopPropagation();
                   if (status === "cooking") {
                     onOpenDetail?.();
@@ -315,12 +293,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                   }
                 }}
                 disabled={status === "completed"}
-                className={`w-full sm:w-auto sm:self-start rounded-lg flex items-center justify-center gap-2.5 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-3 rounded-xl text-sm sm:text-base md:text-lg font-normal uppercase tracking-wider transition-all duration-200 active:scale-95 hover:shadow-lg shadow-md ${actionConfig.colors}`}
-              >
-                <ActionIcon
-                  className="w-5 h-5 sm:w-6 sm:h-6"
-                  strokeWidth={2}
-                />
+                className={`w-full !rounded-full sm:w-auto sm:self-start flex items-center justify-center gap-2.5 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-3 text-sm sm:text-base md:text-lg font-normal transition-all duration-200 active:scale-95 hover:shadow-md ${actionConfig.colors}`}>
+                <ActionIcon className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1} />
                 <span>{actionConfig.label}</span>
               </button>
             );

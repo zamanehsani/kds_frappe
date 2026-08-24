@@ -12,7 +12,7 @@ import {
   User,
   Hash,
 } from "lucide-react";
-import { Order } from "../types";
+import type { Order } from "../types";
 
 interface OrderDetailPanelProps {
   order: Order;
@@ -160,18 +160,8 @@ const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Order details"
-    >
-      <button
-        type="button"
-        aria-label="Close order details"
-        onClick={onClose}
-        className="absolute inset-0 bg-slate-900/55 backdrop-blur-[2px]"
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true"  aria-label="Order details" >
+      <button type="button" aria-label="Close order details" onClick={onClose} className="absolute inset-0 bg-slate-900/55 backdrop-blur-[2px]"/>
 
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-[2rem] border border-olive-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
         <div className="flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 border-b border-olive-100 bg-white flex-shrink-0">
@@ -186,17 +176,12 @@ const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusConfig.colors}`}
-            >
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusConfig.colors}`}>
               <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
               {statusConfig.label}
             </span>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl hover:bg-olive-50 text-olive-400 hover:text-olive-700 transition-colors"
-              aria-label="Close detail modal"
-            >
+            <button onClick={onClose}
+              className="p-2 rounded-xl hover:bg-olive-50 text-olive-400 hover:text-olive-700 transition-colors" aria-label="Close detail modal" >
               <X className="w-4 h-4" strokeWidth={2.5} />
             </button>
           </div>

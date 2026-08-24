@@ -19,18 +19,11 @@ import {
 import { Order } from "../../../types";
 import { toast } from "react-toastify";
 
-
-
 const printKotAPI = async (kotName: string): Promise<any> => {
   // Sending as GET query parameter bypasses Frappe's POST CSRF check entirely
   const response = await fetch(
-    `https://portal.kababrayhan.com/api/method/pizza_app.api.enqueue_print_job?kot_name=${encodeURIComponent(kotName)}`,
-    {
-      method: "GET",
-      headers: {
-        "Accept": "application/json",
-      },
-    }
+    `http://localhost:8000/api/method/pizza_app.api.enqueue_print_job?kot_name=${encodeURIComponent(kotName)}`,
+    {method: "GET", headers: {"Accept": "application/json"}}
   );
 
   if (!response.ok) {
@@ -43,17 +36,11 @@ const printKotAPI = async (kotName: string): Promise<any> => {
 };
 
 const settleDoorstepPaymentAPI = async (salesOrderName: string): Promise<any> => {
-
-  const response = await fetch("https://portal.kababrayhan.com/api/method/pizza_app.api.settle_doorstep_payment", {
+  const response = await fetch("http://localhost:8000/api/method/pizza_app.api.settle_doorstep_payment", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
+    headers: {"Content-Type": "application/json", "Accept": "application/json"},
     credentials: "omit",
-    body: JSON.stringify({
-      sales_order_name: salesOrderName,
-    }),
+    body: JSON.stringify({sales_order_name: salesOrderName}),
   });
 
   if (!response.ok) {
@@ -375,18 +362,8 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
   const isPaid = (order.custom_payment_status || "Unpaid").toLowerCase() === "paid";
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Order details"
-    >
-      <button
-        type="button"
-        aria-label="Close order details"
-        onClick={onClose}
-        className="absolute inset-0 bg-slate-900/55 backdrop-blur-[2px]"
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-label="Order details" >
+      <button type="button" aria-label="Close order details" onClick={onClose} className="absolute inset-0 bg-slate-900/55 backdrop-blur-[2px] border border-red-600" />
 
       <div className="relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-[2rem] border border-olive-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
         <div className="flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 border-b border-olive-100 bg-white flex-shrink-0">
@@ -406,34 +383,23 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
           <div className="flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4"> {/* Changed to mr-2 sm:mr-4 to clear the 2rem corner boundary curve */}
 
-            <button
-              onClick={handlePrintKot}
-              disabled={isPrinting}
-              aria-label={isPrinting ? "Printing" : "Print"}
-              title={isPrinting ? "Printing" : "Print"}
-              className="group flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-olive-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <button onClick={handlePrintKot} disabled={isPrinting} aria-label={isPrinting ? "Printing" : "Print"} title={isPrinting ? "Printing" : "Print"}
+              className="group flex h-8 w-8 items-center justify-center !rounded-full text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-olive-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50" >
               {isPrinting ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-olive-700 border-t-transparent" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-olive-700 border-t-transparent" />
               ) : (
                 <Printer
-                  className="h-4 w-4 transition-transform duration-200 group-hover:scale-110"
+                  className="h-6 w-6 transition-transform duration-200 group-hover:scale-110"
                   strokeWidth={2.3}
                 />
               )}
             </button>
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-normal tracking-wide ${statusConfig.colors}`}
-            >
-              <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${statusConfig.colors}`} >
+              <StatusIcon className="w-4 h-4" strokeWidth={2.5} />
               {statusConfig.label}
             </span>
-            <button
-              onClick={onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full p-2 bg-olive-50 bg-transparent hover:bg-olive-100 text-olive-400 hover:text-olive-700 transition-colors"
-              aria-label="Close detail modal"
-            >
-              <X className="w-4 h-4" strokeWidth={2.5} />
+            <button onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center !rounded-full p-2 border border-red-600 hover:bg-red-600 text-red-600 hover:text-white transition-colors" aria-label="Close detail modal" >
+              <X className="w-6 h-6" strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -444,7 +410,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               <div className="mb-4 sm:mb-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <div className="text-xl sm:text-xl font-normal text-olive-800 uppercase tracking-wide">
+                    <div className="text-xl sm:text-xl font-normal text-olive-800">
                       List Item ({order.items?.length || 0})
                     </div>
                     <div className="text-olive-400 text-xs sm:text-sm mt-1">
@@ -474,7 +440,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     return (
                       <li
                         key={i}
-                        className={`rounded-2xl overflow-hidden transition-all duration-300 ${isItemDone
+                        className={`!rounded-full overflow-hidden transition-all duration-300 ${isItemDone
                           ? "border border-green-200 bg-green-50/80 shadow-sm"
                           : "border border-olive-100 bg-white hover:border-olive-200 hover:shadow-sm"
                           }`}
@@ -630,16 +596,6 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-olive-400">
-                    <Hash className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm">Items</span>
-                  </div>
-                  <span className="text-olive-900 text-xs sm:text-sm font-normal">
-                    {order.items?.length || 0}
-                  </span>
-                </div>
-
                 <div className="flex flex-col gap-2.5 pt-1">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-olive-400">
@@ -683,14 +639,14 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
                 {/* Elegant Customer Notes Component Box */}
                 {order.custom_customer_note && (
-                  <div className="mt-4 pt-4 border-t border-dashed border-olive-200/60">
+                  <div className="mt-4 pt-4 ">
                     <div className="flex items-center gap-2 text-olive-500 mb-1.5">
-                      <FileText className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="text-xs font-medium uppercase tracking-wider">
+                      <FileText className="w-4 h-4 flex-shrink-0" />
+                      <span className="">
                         Customer Notes
                       </span>
                     </div>
-                    <div className="w-full rounded-xl border border-amber-200/70 bg-amber-50/40 p-3 text-xs sm:text-sm font-normal text-amber-900 shadow-inner">
+                    <div className="w-full rounded-2xl border border-slate-100 bg-amber-50/40 p-3">
                       {order.custom_customer_note}
                     </div>
                   </div>

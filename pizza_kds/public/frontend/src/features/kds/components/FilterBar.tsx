@@ -35,7 +35,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             <button
               key={f}
               onClick={() => onFilterChange(f)}
-              className={`px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-3.5 !rounded-2xl border-1 text-xs sm:text-sm md:text-base flex items-center gap-2 transition-all duration-200 font-semibold whitespace-nowrap active:scale-95 ${
+              className={`px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-2 !rounded-full  border-1 text-xs sm:text-sm md:text-base flex items-center gap-2 transition-all duration-200 font-semibold whitespace-nowrap active:scale-95 ${
                 isActive
                   ? "bg-brand-green border-brand-green text-white shadow-md hover:shadow-lg"
                   : "bg-white border-olive-200 text-olive-700 hover:border-olive-400 hover:bg-olive-50"

@@ -20,8 +20,26 @@ const withCookingTimer = (order) => {
 
 export const useKDS = () => {
 	const [orders, setOrders] = useState([]);
+	const [hasBackendConnection, setHasBackendConnection] = useState(true);
 	const audioPlayer = useRef(null);
 	const audioUnlocked = useRef(false);
+
+	const enableAudio = async () => {
+		if (!audioPlayer.current) return false;
+
+		try {
+			audioPlayer.current.currentTime = 0;
+			await audioPlayer.current.play();
+			audioPlayer.current.pause();
+			audioPlayer.current.currentTime = 0;
+			audioUnlocked.current = true;
+			console.log("[KDS] Audio notifications enabled");
+			return true;
+		} catch (error) {
+			console.warn("[KDS] Audio permission was not granted:", error);
+			return false;
+		}
+	};
 
 	// Effect 1: Initialize audio and unlock on first interaction
 	useEffect(() => {
@@ -31,19 +49,7 @@ export const useKDS = () => {
 
 		// Unlock audio on first user interaction
 		const unlockAudio = () => {
-			if (audioPlayer.current && !audioUnlocked.current) {
-				audioPlayer.current
-					.play()
-					.then(() => {
-						audioPlayer.current.pause();
-						audioPlayer.current.currentTime = 0;
-						audioUnlocked.current = true;
-						console.log("✓ Audio unlocked - notifications will now play");
-					})
-					.catch(() => {
-						// Will try again on next interaction
-					});
-			}
+			if (!audioUnlocked.current) enableAudio();
 		};
 
 		globalThis.addEventListener("click", unlockAudio, { once: true });
@@ -64,9 +70,12 @@ export const useKDS = () => {
 	// Effect 2: Fetch initial orders and subscribe to realtime updates
 	useEffect(() => {
 		// 1. Initial Fetch of existing KOTs
+		console.log("[KDS] Fetching initial orders");
 		globalThis.frappe.call({
 			method: "pizza_app.api.get_kds_orders",
 			callback: (r) => {
+				console.log("[KDS] Initial orders response:", r);
+				setHasBackendConnection(true);
 				if (r.message) {
 					const formatted = r.message.map((o) =>
 						withCookingTimer({
@@ -76,17 +85,18 @@ export const useKDS = () => {
 							created_ts: new Date(o.creation).getTime(),
 						})
 					);
+					console.log("[KDS] Initial orders:", formatted);
 					setOrders(formatted);
 				}
+			},
+			error: () => {
+				setHasBackendConnection(false);
 			},
 		});
 
 		// 2. Real-time listener for new orders
 		globalThis.frappe.realtime.on("new_kot", (msg) => {
-			console.log("🔔 New KOT received:", msg.name);
-
-
-
+			console.log("🔔 New KOT received:", msg);
 			if (audioPlayer.current) {
                 audioPlayer.current.currentTime = 0;
                 audioPlayer.current
@@ -168,6 +178,7 @@ export const useKDS = () => {
 		});
 	};
 
-	return { orders, bump };
+			
+	return { orders, bump, enableAudio, hasBackendConnection };
 };
 

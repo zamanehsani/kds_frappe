@@ -4,9 +4,11 @@
     globalThis.__kds_web_app_loader_installed__ = true;
 
     const DEV_SERVER_ORIGIN = 'http://localhost:5173';
+    const DEV_PROBE_TIMEOUT_MS = 1200;
     const MANIFEST_PATH = '/assets/pizza_kds/kds/.vite/manifest.json';
     const LOADED_STYLE_IDS = new Set(globalThis.__kds_loaded_style_ids__ || []);
     globalThis.__kds_loaded_style_ids__ = LOADED_STYLE_IDS;
+    const IS_LOCAL_PAGE = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
 
     function appendModuleScript(src) {
         const script = document.createElement('script');
@@ -17,11 +19,20 @@
     }
 
     function canReachDevServer() {
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        const timeoutId = setTimeout(() => {
+            controller?.abort();
+        }, DEV_PROBE_TIMEOUT_MS);
+
         return fetch(`${DEV_SERVER_ORIGIN}/@vite/client`, {
             method: 'GET',
             mode: 'cors',
             cache: 'no-store',
-        }).then((response) => response.ok);
+            signal: controller?.signal,
+        })
+            .then((response) => response.ok)
+            .catch(() => false)
+            .finally(() => clearTimeout(timeoutId));
     }
 
     function appendStylesheet(href) {
@@ -46,6 +57,9 @@
         document.head.appendChild(preamble);
 
         const viteClient = appendModuleScript(`${DEV_SERVER_ORIGIN}/@vite/client`);
+        viteClient.onerror = () => {
+            loadFromBuiltAssets().catch(() => {});
+        };
         viteClient.onload = () => appendModuleScript(`${DEV_SERVER_ORIGIN}/src/main.jsx`);
     }
 
@@ -65,6 +79,11 @@
         appendModuleScript(`/assets/pizza_kds/kds/${entry.file}`);
     }
 
+    if (!IS_LOCAL_PAGE) {
+        loadFromBuiltAssets().catch(() => {});
+        return;
+    }
+
     canReachDevServer()
         .then((isAvailable) => {
             if (isAvailable) {
@@ -75,7 +94,7 @@
             return loadFromBuiltAssets();
         })
         .catch(() => {
-            loadFromBuiltAssets();
+            loadFromBuiltAssets().catch(() => {});
         });
 })();
 </script>

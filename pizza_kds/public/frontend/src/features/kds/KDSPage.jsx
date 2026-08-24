@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { CloudOff, RefreshCw } from "lucide-react";
 import { useKDS } from "../../hooks/useKDS";
 import FilterBar from "./components/FilterBar";
 import OrderCard from "./components/OrderCard";
@@ -21,15 +22,58 @@ const toDateString = (date) => {
 };
 
 export default function KDSPage() {
-  const { orders, bump } = useKDS();
+  const { orders, bump, enableAudio, hasBackendConnection } = useKDS();
   const [, setNow] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isDateFilterActive, setIsDateFilterActive] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (error) {
+      console.warn("[KDS] Fullscreen request was blocked:", error);
+    }
+  };
 
+  const requestPermissions = async () => {
+    await enableAudio();
 
+    if ("Notification" in window && Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+  };
+
+  useEffect(() => {
+    const updateFullscreenState = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    const markOnline = () => setIsOnline(true);
+    const markOffline = () => setIsOnline(false);
+    const suppressFrappeOfflineAlert = (event) => {
+      markOffline();
+      event.stopImmediatePropagation();
+    };
+
+    document.addEventListener("fullscreenchange", updateFullscreenState);
+    window.addEventListener("online", markOnline);
+    window.addEventListener("offline", markOffline);
+    window.addEventListener("offline", suppressFrappeOfflineAlert, true);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", updateFullscreenState);
+      window.removeEventListener("online", markOnline);
+      window.removeEventListener("offline", markOffline);
+      window.removeEventListener("offline", suppressFrappeOfflineAlert, true);
+    };
+  }, []);
 
   useEffect(() => {
     let wakeLock = null;
@@ -128,24 +172,19 @@ export default function KDSPage() {
     ? orders.find((order) => order.name === expandedOrderId) ?? null
     : null;
 
-  useEffect(() => {
-    if (
-      expandedOrderId &&
-      !orders.find((order) => order.name === expandedOrderId)
-    ) {
-      setExpandedOrderId(null);
-    }
-  }, [orders, expandedOrderId]);
 
   return (
-    <div className="min-h-screen bg-white p-6 sm:p-8">
-         <div className="flex justify-end mb-2">
-     <SettingsMenu onLogout={() => logoutFrappe("/kds/login")} />
-    </div>
+    <div className="relative min-h-screen bg-white p-4 sm:p-6">
+
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <SettingsMenu
+          onLogout={() => logoutFrappe("/kds/login")}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
+          onRequestPermissions={requestPermissions}
+        />
+      </div>
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-center text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-4 sm:mb-6 mt-0">
-          Order List
-        </h2>
         <FilterBar
           activeFilter={activeFilter}
           counts={counts}
@@ -182,6 +221,29 @@ export default function KDSPage() {
           onClose={() => setExpandedOrderId(null)}
           onBump={bump}
         />
+      )}
+
+      {(!isOnline || !hasBackendConnection) && (
+        <div
+          className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 items-center gap-3 rounded-lg border border-red-700 bg-red-600 px-4 py-3 text-sm font-medium text-white shadow-xl sm:w-auto"
+          role="alert"
+        >
+          <CloudOff className="h-5 w-5 shrink-0" />
+          <span className="flex-1">
+            {!isOnline
+              ? "You are offline. Orders will refresh when the network returns."
+              : "Cannot reach the KDS backend. Check the server connection."}
+          </span>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-white/15 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white"
+            aria-label="Refresh KDS page"
+            title="Refresh KDS page"
+          >
+            <RefreshCw className="h-5 w-5" />
+          </button>
+        </div>
       )}
     </div>
   );
