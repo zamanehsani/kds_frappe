@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useKDS } from "../../hooks/useKDS";
 import { logoutFrappe } from "../auth/api/session";
 import { MenuPage } from "../../components/Admin/MenuPage";
-import OrdersPage from "../../components/Admin/OrdersPage"
+// import OrdersPage from "../../components/Admin/OrdersPage"
 import HomePage from "../../components/Admin/HomePage";
 import  Sidebar  from "../../components/Admin/Sidebar";
 
 
 export default function KDSAdminPage() {
-  const { orders, bump } = useKDS();
+  const { orders } = useKDS();
+  // const { orders, bump } = useKDS();
   const [activePage, setActivePage] = useState("home");
 
   return (

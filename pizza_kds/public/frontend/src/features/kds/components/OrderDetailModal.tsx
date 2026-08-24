@@ -19,10 +19,12 @@ import {
 import { Order } from "../../../types";
 import { toast } from "react-toastify";
 
+const backendOrigin = import.meta.env.VITE_BACKEND_ORIGIN || window.location.origin;
+
 const printKotAPI = async (kotName: string): Promise<any> => {
   // Sending as GET query parameter bypasses Frappe's POST CSRF check entirely
   const response = await fetch(
-    `http://localhost:8000/api/method/pizza_app.api.enqueue_print_job?kot_name=${encodeURIComponent(kotName)}`,
+    `${backendOrigin}/api/method/pizza_app.api.enqueue_print_job?kot_name=${encodeURIComponent(kotName)}`,
     {method: "GET", headers: {"Accept": "application/json"}}
   );
 
@@ -36,7 +38,7 @@ const printKotAPI = async (kotName: string): Promise<any> => {
 };
 
 const settleDoorstepPaymentAPI = async (salesOrderName: string): Promise<any> => {
-  const response = await fetch("http://localhost:8000/api/method/pizza_app.api.settle_doorstep_payment", {
+  const response = await fetch(`${backendOrigin}/api/method/pizza_app.api.settle_doorstep_payment`, {
     method: "POST",
     headers: {"Content-Type": "application/json", "Accept": "application/json"},
     credentials: "omit",
