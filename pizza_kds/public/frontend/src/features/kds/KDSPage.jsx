@@ -4,6 +4,7 @@ import { useKDS } from "../../hooks/useKDS";
 import FilterBar from "./components/FilterBar";
 import OrderCard from "./components/OrderCard";
 import OrderDetailModal from "./components/OrderDetailModal";
+import DateRangeFilterModal from "./components/DateRangeFilterModal";
 import { logoutFrappe } from "../auth/api/session";
 import SettingsMenu from "../auth/components/SettingsMenu";
 
@@ -14,19 +15,34 @@ const normaliseStatus = (raw) => {
   return status;
 };
 
-const toDateString = (date) => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(date.getDate()).padStart(2, "0")}`;
+const startOfDay = (date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+const addDays = (date, days) => {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+};
+
+// Default range: beginning of today through midnight at the start of tomorrow.
+const getDefaultDateRange = () => {
+  const start = startOfDay(new Date());
+  return { start, end: addDays(start, 1) };
+};
+
+const getOrderTimestamp = (order) => {
+  if (order.created_ts) return order.created_ts;
+  if (order.creation) return new Date(order.creation).getTime();
+  return null;
 };
 
 export default function KDSPage() {
-  const { orders, bump, enableAudio, hasBackendConnection } = useKDS();
+  const { orders, bump, enableAudio, hasBackendConnection, fetchOrders } = useKDS();
   const [, setNow] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState(getDefaultDateRange);
   const [isDateFilterActive, setIsDateFilterActive] = useState(false);
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -144,11 +160,11 @@ export default function KDSPage() {
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       if (isDateFilterActive) {
-        const creationDateStr =
-          order.creation?.substring(0, 10) ||
-          (order.created_ts ? toDateString(new Date(order.created_ts)) : null);
-
-        if (creationDateStr && creationDateStr !== toDateString(selectedDate)) {
+        const timestamp = getOrderTimestamp(order);
+        if (
+          timestamp !== null &&
+          (timestamp < dateRange.start.getTime() || timestamp >= dateRange.end.getTime())
+        ) {
           return false;
         }
       }
@@ -156,16 +172,20 @@ export default function KDSPage() {
       if (activeFilter === "All") return true;
       return normaliseStatus(order.status) === activeFilter.toLowerCase();
     });
-  }, [orders, activeFilter, selectedDate, isDateFilterActive]);
+  }, [orders, activeFilter, dateRange, isDateFilterActive]);
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
+  const handleApplyDateRange = (range) => {
+    setDateRange(range);
     setIsDateFilterActive(true);
+    setIsDateFilterOpen(false);
+    fetchOrders(range);
   };
 
-  const handleDateClear = () => {
-    setSelectedDate(new Date());
+  const handleClearDateRange = () => {
+    setDateRange(getDefaultDateRange());
     setIsDateFilterActive(false);
+    setIsDateFilterOpen(false);
+    fetchOrders();
   };
 
   const expandedOrder = expandedOrderId
@@ -182,6 +202,8 @@ export default function KDSPage() {
           isFullscreen={isFullscreen}
           onToggleFullscreen={toggleFullscreen}
           onRequestPermissions={requestPermissions}
+          onOpenDateFilter={() => setIsDateFilterOpen(true)}
+          isDateFilterActive={isDateFilterActive}
         />
       </div>
       <div className="max-w-5xl mx-auto">
@@ -189,10 +211,6 @@ export default function KDSPage() {
           activeFilter={activeFilter}
           counts={counts}
           onFilterChange={setActiveFilter}
-          selectedDate={selectedDate}
-          onDateChange={handleDateChange}
-          isDateFilterActive={isDateFilterActive}
-          onDateClear={handleDateClear}
         />
       </div>
 
@@ -220,6 +238,16 @@ export default function KDSPage() {
           order={expandedOrder}
           onClose={() => setExpandedOrderId(null)}
           onBump={bump}
+        />
+      )}
+
+      {isDateFilterOpen && (
+        <DateRangeFilterModal
+          initialRange={dateRange}
+          isActive={isDateFilterActive}
+          onApply={handleApplyDateRange}
+          onClear={handleClearDateRange}
+          onClose={() => setIsDateFilterOpen(false)}
         />
       )}
 

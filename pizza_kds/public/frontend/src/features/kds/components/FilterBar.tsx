@@ -4,10 +4,10 @@ interface FilterBarProps {
   activeFilter: string;
   counts: Record<string, number>;
   onFilterChange: (filter: string) => void;
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-  isDateFilterActive: boolean;
-  onDateClear: () => void;
+  selectedDate?: Date;
+  onDateChange?: (date: Date) => void;
+  isDateFilterActive?: boolean;
+  onDateClear?: () => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -22,7 +22,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const [showCalendar, setShowCalendar] = useState(false);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onDateChange(new Date(e.target.value + "T00:00:00"));
+    onDateChange?.(new Date(e.target.value + "T00:00:00"));
     setShowCalendar(false);
   };
 

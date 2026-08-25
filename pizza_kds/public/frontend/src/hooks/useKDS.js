@@ -1,7 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import notificationSound from "../assets/notification.mp3";
 
 const normaliseStatus = (status) => status?.toLowerCase() || "pending";
+
+// Frappe expects "YYYY-MM-DD HH:MM:SS" in local time, not an ISO string.
+const toFrappeDatetime = (date) => {
+	const pad = (n) => String(n).padStart(2, "0");
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+		date.getHours()
+	)}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
 
 const withCookingTimer = (order) => {
 	const status = normaliseStatus(order.status);
@@ -68,13 +76,17 @@ export const useKDS = () => {
 	}, []);
 
 	// Effect 2: Fetch initial orders and subscribe to realtime updates
-	useEffect(() => {
-		// 1. Initial Fetch of existing KOTs
-		console.log("[KDS] Fetching initial orders");
+	const fetchOrders = useCallback((range) => {
+		const args = range
+			? { start_date: toFrappeDatetime(range.start), end_date: toFrappeDatetime(range.end) }
+			: {};
+
+		console.log("[KDS] Fetching orders", args);
 		globalThis.frappe.call({
 			method: "pizza_app.api.get_kds_orders",
+			args,
 			callback: (r) => {
-				console.log("[KDS] Initial orders response:", r);
+				console.log("[KDS] Orders response:", r);
 				setHasBackendConnection(true);
 				if (r.message) {
 					const formatted = r.message.map((o) =>
@@ -85,7 +97,7 @@ export const useKDS = () => {
 							created_ts: new Date(o.creation).getTime(),
 						})
 					);
-					console.log("[KDS] Initial orders:", formatted);
+					console.log("[KDS] Orders:", formatted);
 					setOrders(formatted);
 				}
 			},
@@ -93,6 +105,11 @@ export const useKDS = () => {
 				setHasBackendConnection(false);
 			},
 		});
+	}, []);
+
+	useEffect(() => {
+		// 1. Initial Fetch of existing KOTs (defaults to today's range on the server)
+		fetchOrders();
 
 		// 2. Real-time listener for new orders
 		globalThis.frappe.realtime.on("new_kot", (msg) => {
@@ -133,7 +150,7 @@ export const useKDS = () => {
 		return () => {
 			globalThis.frappe.realtime.off("new_kot");
 		};
-	}, []);
+	}, [fetchOrders]);
 
 	// 3. Status Update Logic (The "Bump" system)
 	const bump = (name) => {
@@ -179,6 +196,6 @@ export const useKDS = () => {
 	};
 
 			
-	return { orders, bump, enableAudio, hasBackendConnection };
+	return { orders, bump, enableAudio, hasBackendConnection, fetchOrders };
 };
 

@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { BellRing, LogOut, Maximize, Minimize, Settings } from "lucide-react";
+import { BellRing, CalendarRange, LogOut, Maximize, Minimize, Settings } from "lucide-react";
 
 type SettingsMenuProps = {
   onLogout: () => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void | Promise<void>;
   onRequestPermissions: () => void | Promise<void>;
+  onOpenDateFilter: () => void;
+  isDateFilterActive?: boolean;
 };
 
 export default function SettingsMenu({
@@ -13,6 +15,8 @@ export default function SettingsMenu({
   isFullscreen,
   onToggleFullscreen,
   onRequestPermissions,
+  onOpenDateFilter,
+  isDateFilterActive,
 }: SettingsMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -56,6 +60,20 @@ export default function SettingsMenu({
           >
             <BellRing className="w-4 h-4" />
             Enable alerts
+          </button>
+
+          <button
+            onClick={() => {
+              setOpen(false);
+              onOpenDateFilter();
+            }}
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-olive-700 hover:bg-olive-50"
+          >
+            <CalendarRange className="w-4 h-4" />
+            Filter by date
+            {isDateFilterActive && (
+              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-green" />
+            )}
           </button>
 
           <button
