@@ -19,10 +19,16 @@ import {
 import { Order } from "../../../types";
 import { toast } from "react-toastify";
 
-const backendOrigin = import.meta.env.VITE_BACKEND_ORIGIN || window.location.origin;
+// Detect if running locally or in production
+const backendOrigin = window.location.hostname === "localhost" 
+  ? "http://localhost:8000" 
+  : window.location.origin;
 
 const printKotAPI = async (kotName: string): Promise<any> => {
   // Sending as GET query parameter bypasses Frappe's POST CSRF check entirely
+  console.log(`Sending print request for KOT: ${kotName}`);
+  console.log("base url:", backendOrigin);
+
   const response = await fetch(
     `${backendOrigin}/api/method/pizza_app.api.enqueue_print_job?kot_name=${encodeURIComponent(kotName)}`,
     {method: "GET", headers: {"Accept": "application/json"}}
