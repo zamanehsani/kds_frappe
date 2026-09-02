@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "react-toastify";
 import notificationSound from "../assets/notification.mp3";
 
 const normaliseStatus = (status) => status?.toLowerCase() || "pending";
@@ -28,7 +29,9 @@ const withCookingTimer = (order) => {
 
 export const useKDS = () => {
 	const [orders, setOrders] = useState([]);
-	const [hasBackendConnection, setHasBackendConnection] = useState(true);
+	const [hasBackendConnection, setHasBackendConnection] = useState(
+		() => globalThis.frappe?.realtime?.socket?.connected ?? true
+	);
 	const audioPlayer = useRef(null);
 	const audioUnlocked = useRef(false);
 
@@ -75,6 +78,55 @@ export const useKDS = () => {
 		};
 	}, []);
 
+	const playNotificationSound = () => {
+		if (!audioPlayer.current) return;
+		audioPlayer.current.currentTime = 0;
+		audioPlayer.current.play().catch((err) => {
+			console.warn(
+				"🔇 Audio blocked. Click anywhere on the screen to enable sounds.",
+				err
+			);
+		});
+	};
+
+	// Adds/updates an order card from either a KOT payload or a raw Sales Order payload
+	const upsertOrder = (raw) => {
+		setOrders((prev) => {
+			const exists = prev.some((o) => o.name === raw.name);
+
+			const updatedOrder = withCookingTimer({
+				...raw,
+				custom_payment_method: raw.custom_payment_method,
+				custom_payment_status: raw.custom_payment_status,
+				created_ts: raw.creation ? new Date(raw.creation).getTime() : Date.now(),
+			});
+
+			if (exists) {
+				// This block now swaps out data for already existing array items reactively
+				return prev.map((o) => (o.name === raw.name ? updatedOrder : o));
+			}
+			return [updatedOrder, ...prev];
+		});
+	};
+
+	// Online orders no longer create a KOT server-side; they arrive as a raw Sales Order dict
+	const normaliseSalesOrderEvent = (so) => ({
+		name: so.name,
+		sales_order: so.name,
+		status: "Pending",
+		customer: so.customer_name || so.customer,
+		order_type: so.order_type,
+		custom_payment_method: so.custom_payment_method,
+		custom_payment_status: so.custom_payment_status,
+		creation: so.creation,
+		items: (so.items || []).map((item) => ({
+			item_code: item.item_code,
+			item_name: item.item_name || item.item_code,
+			qty: item.qty,
+			description: item.description,
+		})),
+	});
+
 	// Effect 2: Fetch initial orders and subscribe to realtime updates
 	const fetchOrders = useCallback((range) => {
 		const args = range
@@ -87,7 +139,6 @@ export const useKDS = () => {
 			args,
 			callback: (r) => {
 				console.log("[KDS] Orders response:", r);
-				setHasBackendConnection(true);
 				if (r.message) {
 					const formatted = r.message.map((o) =>
 						withCookingTimer({
@@ -101,9 +152,6 @@ export const useKDS = () => {
 					setOrders(formatted);
 				}
 			},
-			error: () => {
-				setHasBackendConnection(false);
-			},
 		});
 	}, []);
 
@@ -111,46 +159,55 @@ export const useKDS = () => {
 		// 1. Initial Fetch of existing KOTs (defaults to today's range on the server)
 		fetchOrders();
 
-		// 2. Real-time listener for new orders
+		// 2. Real-time listener for in-store orders (KOT already created server-side)
 		globalThis.frappe.realtime.on("new_kot", (msg) => {
 			console.log("🔔 New KOT received:", msg);
-			if (audioPlayer.current) {
-                audioPlayer.current.currentTime = 0;
-                audioPlayer.current
-                    .play()
-                    .catch((err) => {
-                        console.warn(
-                            "🔇 Audio blocked. Click anywhere on the screen to enable sounds.",
-                            err
-                        );
-                    });
-            }
-
-
-			setOrders((prev) => {
-                const exists = prev.some((o) => o.name === msg.name);
-
-                const updatedOrder = withCookingTimer({
-                    ...msg,
-                    custom_payment_method: msg.custom_payment_method,
-                    custom_payment_status: msg.custom_payment_status,
-                    created_ts: msg.creation ? new Date(msg.creation).getTime() : Date.now(),
-                });
-
-                if (exists) {
-                    // This block now swaps out data for already existing array items reactively
-                    return prev.map((o) => (o.name === msg.name ? updatedOrder : o));
-                } else {
-                    return [updatedOrder, ...prev];
-                }
-            });
+			playNotificationSound();
+			toast.info(`New order: ${msg.name}`);
+			upsertOrder(msg);
 		});
 
-		// Cleanup socket listener on unmount
+		// 3. Real-time listener for online/doorstep orders (raw Sales Order, no KOT yet)
+		globalThis.frappe.realtime.on("new order", (msg) => {
+			console.log("🔔 New online order received:", msg);
+			playNotificationSound();
+			toast.info(`New online order: ${msg.name}`);
+			upsertOrder(normaliseSalesOrderEvent(msg));
+		});
+
+		// 4. Real-time listener for print broadcasts sent to the local print agent
+		globalThis.frappe.realtime.on("print_job", (msg) => {
+			console.log("🖨️ Print job event received:", msg);
+			playNotificationSound();
+			toast.info(`Print job sent for order: ${msg.name}`);
+		});
+
+		// Cleanup socket listeners on unmount
 		return () => {
 			globalThis.frappe.realtime.off("new_kot");
+			globalThis.frappe.realtime.off("new order");
+			globalThis.frappe.realtime.off("print_job");
 		};
 	}, [fetchOrders]);
+
+	// Effect 3: Track backend reachability via the underlying socket.io connection state
+	useEffect(() => {
+		const socket = globalThis.frappe?.realtime?.socket;
+		if (!socket) return;
+
+		const handleConnect = () => setHasBackendConnection(true);
+		const handleDisconnect = () => setHasBackendConnection(false);
+
+		socket.on("connect", handleConnect);
+		socket.on("disconnect", handleDisconnect);
+		socket.on("connect_error", handleDisconnect);
+
+		return () => {
+			socket.off("connect", handleConnect);
+			socket.off("disconnect", handleDisconnect);
+			socket.off("connect_error", handleDisconnect);
+		};
+	}, []);
 
 	// 3. Status Update Logic (The "Bump" system)
 	const bump = (name) => {

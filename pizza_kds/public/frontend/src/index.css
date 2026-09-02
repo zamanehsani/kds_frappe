@@ -1,262 +1,130 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-@import "tailwindcss";
+@import "tailwindcss" important;
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
 
-@source "./**/*.{tsx,jsx,ts,js}";
-/* Tailwind v4 Theme Configuration */
-@theme {
-  /* Purple color scale */
-  --color-purple-50: #faf5ff;
-  --color-purple-100: #f3e8ff;
-  --color-purple-200: #e9d5ff;
-  --color-purple-300: #d8b4fe;
-  --color-purple-400: #c084fc;
-  --color-purple-500: #a855f7;
-  --color-purple-600: #9333ea;
-  --color-purple-700: #7e22ce;
-  --color-purple-800: #6b21a8;
-  --color-purple-900: #581c87;
-  --color-purple-950: #3b0764;
+@custom-variant dark (&:is(.dark *));
 
-  /* Orange color scale */
-  --color-orange-50: #fff7ed;
-  --color-orange-100: #ffedd5;
-  --color-orange-200: #fed7aa;
-  --color-orange-300: #fdba74;
-  --color-orange-400: #fb923c;
-  --color-orange-500: #f97316;
-  --color-orange-600: #ea580c;
-  --color-orange-700: #c2410c;
-  --color-orange-800: #9a3412;
-  --color-orange-900: #7c2d12;
-  --color-orange-950: #431407;
-
-  /* Blue color scale */
-  --color-blue-50: #eff6ff;
-  --color-blue-100: #dbeafe;
-  --color-blue-200: #bfdbfe;
-  --color-blue-300: #93c5fd;
-  --color-blue-400: #60a5fa;
-  --color-blue-500: #3b82f6;
-  --color-blue-600: #2563eb;
-  --color-blue-700: #1d4ed8;
-  --color-blue-800: #1e40af;
-  --color-blue-900: #1e3a8a;
-  --color-blue-950: #172554;
-
-  /* Green color scale */
-  --color-green-50: #f0fdf4;
-  --color-green-100: #dcfce7;
-  --color-green-200: #bbf7d0;
-  --color-green-300: #86efac;
-  --color-green-400: #4ade80;
-  --color-green-500: #22c55e;
-  --color-green-600: #16a34a;
-  --color-green-700: #15803d;
-  --color-green-800: #166534;
-  --color-green-900: #14532d;
-  --color-green-950: #052e16;
-
-  /* Olive color scale (warm gray-green) */
-  --color-olive-50: #f8f9f7;
-  --color-olive-100: #e7ece8;
-  --color-olive-200: #d4ddd5;
-  --color-olive-300: #b5c2b7;
-  --color-olive-400: #8a9c8d;
-  --color-olive-500: #6b7d6e;
-  --color-olive-600: #556658;
-  --color-olive-700: #465149;
-  --color-olive-800: #3b453d;
-  --color-olive-900: #323a34;
-  --color-olive-950: #1a1f1b;
-
-  /* Brand colors */
-  --color-brand-gray: #94A3B8;
-  --color-brand-green: #22C55E;
-  --color-brand-red: #EF4444;
-  --color-brand-orange: #F59E0B;
-  --color-brand-blue: #3B82F6;
-  --color-brand-purple: #A855F7;
-
-  /* Status colors */
-  --color-status-green: #16a34a;
-  --color-status-blue: #0ea5e9;
-  --color-status-orange: #f97316;
-  --color-status-purple: #a855f7;
-
-  /* Font family */
-  --font-sans: Roboto, ui-sans-serif, system-ui, sans-serif;
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Base styles */
+:root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
 @layer base {
-  :root {
-    --bg-dark: #0f172a;
-    --card-bg: #1e293b;
-    --text-main: #f8fafc;
-    --accent: #f59e0b;
-    --success: #22c55e;
-    --danger: #ef4444;
-  }
-
-  html,
+  * {
+    @apply border-border outline-ring/50;
+    }
   body {
-    @apply m-0 p-0 font-sans;
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-}
-
-/* Component layer for custom classes - using regular CSS for better control */
-@layer components {
-  .kds-container {
-    @apply p-5;
-  }
-
-  .kds-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5;
-  }
-
-  .order-card {
-    background: var(--card-bg);
-    @apply rounded-lg border-l-2 border-amber-500 flex flex-col shadow-lg;
-  }
-
-  .order-card.pending {
-    @apply border-l-slate-500;
-  }
-
-  .order-card.preparing {
-    border-left-color: #f59e0b;
-  }
-
-  .order-card.ready {
-    border-left-color: #3b82f6;
-  }
-
-  .order-card.completed {
-    border-left-color: #16a34a;
-  }
-
-  .order-card.delayed {
-    border-left-color: #ef4444;
-  }
-
-  .order-header {
-    @apply px-4 py-3 flex justify-between items-center border-b;
-    background: rgba(255, 255, 255, 0.05);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .order-id {
-    @apply text-2xl font-black;
-  }
-
-  .timer {
-    @apply font-mono text-xl;
-    color: var(--accent);
-  }
-
-  .order-card.delayed .timer {
-    color: #ef4444;
-  }
-
-  .order-body {
-    @apply p-5 flex-grow;
-  }
-
-  .order-list {
-    @apply list-none p-0 m-0;
-  }
-
-  .order-item {
-    @apply py-2.5 text-lg flex justify-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .bump-btn {
-    background: #22c55e;
-    @apply text-white border-none px-5 py-5 text-base font-bold cursor-pointer uppercase tracking-wider transition-colors;
-  }
-
-  .bump-btn.pending {
-    background: #f59e0b;
-  }
-
-  .bump-btn.preparing {
-    background: #3b82f6;
-  }
-
-  .bump-btn.ready {
-    background: #16a34a;
-  }
-
-  .bump-btn.completed {
-    @apply cursor-default opacity-80;
-    background: #475569;
-  }
-
-  .status-badge {
-    @apply px-2 py-1 rounded-lg;
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .status-badge.pending {
-    color: #94a3b8;
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .status-badge.preparing {
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.08);
-  }
-
-  .status-badge.ready {
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.08);
-  }
-
-  .status-badge.completed {
-    color: #16a34a;
-    background: rgba(22, 163, 74, 0.08);
-  }
-
-  /* Hide scrollbar but keep functionality */
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
-  }
-}
-
-
-
-
-/* Hide Frappe left navigation sidebar */
-.body-sidebar-container,
-.body-sidebar-placeholder,
-.desk-sidebar {
-  display: none !important;
-}
-
-/* Hide Frappe right sidebar */
-.layout-side-section {
-  display: none !important;
-}
-
-/* This expands the main content area to take up the 100% of the screen */
-.layout-main-section {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-
-/* Optional: Hide the top navbar breadcrumbs to give more room for orders */
-.page-head {
-  display: none !important;
+    @apply bg-background text-foreground;
+    }
+  html {
+    @apply font-sans;
+    }
 }

@@ -1,300 +1,115 @@
-import React from "react";
+import { Bike, Clock, Play, ShoppingBag, Sparkles, UtensilsCrossed } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
-  ChefHat,
-  Bell,
-  CircleCheckBig,
-  Sparkles,
-  Play,
-  Check,
-} from "lucide-react";
-import { Order } from "../types";
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+import {
+  STATUS_BADGE_CLASSES,
+  STATUS_LABELS,
+  formatOrderDate,
+  formatOrderTime,
+  nextAction,
+  canAdvanceStatus,
+} from '@/lib/order-ui'
+import { useOrdersStore } from '@/stores/orders-store'
+import type { Order, OrderType } from '@/types/order'
 
-interface OrderCardProps {
-  order: Order;
-  onBump: (name: string) => void;
-  onOpenDetail?: () => void;
+const TYPE_ICONS: Record<OrderType, typeof Bike> = {
+  'Dine In': UtensilsCrossed,
+  Takeaway: ShoppingBag,
+  Delivery: Bike,
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, onBump, onOpenDetail }) => {
-  const COOKING_DURATION_MS = 20 * 60 * 1000;
+const MAX_VISIBLE_ITEMS = 3
 
-  // Normalise backend aliases to display statuses
-  // Backend flow:  pending  → preparing → ready → completed
-  // Display names: new      → cooking   → ready → completed
-  const rawStatus = order.status?.toLowerCase() || "new";
-  const status =
-    rawStatus === "pending" ? "new" :
-    rawStatus === "preparing" ? "cooking" :
-    rawStatus;
+interface OrderCardProps {
+  order: Order
+  onOpenDetails: () => void
+}
 
-  // Current status badge configuration
-  const getStatusConfig = () => {
-    switch (status) {
-      case "cooking":
-        return {
-          label: "Cooking",
-          icon: ChefHat,
-          colors: "bg-orange-100 !text-orange-700",
-        };
-      case "ready":
-        return {
-          label: "Ready to serve",
-          icon: Bell,
-          colors: "bg-blue-100 !text-blue-700",
-        };
-      case "completed":
-        return {
-          label: "Completed",
-          icon: CircleCheckBig,
-          colors: "bg-green-100 !text-green-700",
-        };
-      case "cancelled":
-        return {
-          label: "Cancelled",
-          icon: CircleCheckBig,
-          colors: "bg-red-100 !text-red-600",
-        };
-      default: // "new"
-        return {
-          label: "New Order",
-          icon: Sparkles,
-          colors: "bg-purple-100 !text-purple-700",
-        };
-    }
-  };
-
-  // Next action button — shows what clicking will DO next
-  const getActionConfig = () => {
-    switch (status) {
-      case "new":
-        return {
-          label: "Start Cooking",
-          icon: Play,
-          colors: "bg-purple-100 !text-purple-600 hover:bg-purple-200 border-0",
-        };
-      case "cooking":
-        return {
-          label: "Mark Ready",
-          icon: Bell,
-          colors: "bg-blue-100 !text-blue-600 hover:bg-blue-200 border-0",
-        };
-      case "ready":
-        return {
-          label: "Complete",
-          icon: Check,
-          colors: "bg-green-100 !text-green-600 hover:bg-green-200 border-0",
-        };
-      case "completed":
-        return {
-          label: "Archived",
-          icon: CircleCheckBig,
-          colors: "bg-slate-100 !text-slate-400 border-0 cursor-not-allowed",
-        };
-      default:
-        return null; // cancelled / unknown — no action button
-    }
-  };
-
-  const statusConfig = getStatusConfig();
-  const actionConfig = getActionConfig();
-  const StatusIcon = statusConfig.icon;
-  const isCooking = status === "cooking";
-  const cookingStartedAt = order.cooking_started_ts ?? null;
-  const elapsedMs = isCooking && cookingStartedAt
-    ? Math.max(0, Date.now() - cookingStartedAt)
-    : 0;
-  const elapsedRatio = isCooking
-    ? Math.min(elapsedMs / COOKING_DURATION_MS, 1)
-    : 0;
-  const remainingRatio = 1 - elapsedRatio;
-
-  const timerColor =
-    remainingRatio > 0.5
-      ? "#22c55e"
-      : remainingRatio > 0.2
-      ? "#f59e0b"
-      : "#ef4444";
-  const progressAngle = `${Math.max(remainingRatio * 360, 6)}deg`;
-  const cookingBorderStyle = isCooking
-    ? {
-        background: `conic-gradient(from -90deg, ${timerColor} 0deg, ${timerColor} ${progressAngle}, #e7ece8 ${progressAngle}, #e7ece8 360deg)`,
-        boxShadow: `0 0 0 1px ${timerColor}12, 0 10px 24px ${timerColor}18`,
-      }
-    : undefined;
-  const cookingLabel =
-    elapsedRatio < 1
-      ? `${Math.max(0, Math.ceil((COOKING_DURATION_MS - elapsedMs) / 60000))}m left`
-      : "Over time";
+export default function OrderCard({ order, onOpenDetails }: OrderCardProps) {
+  const updateStatus = useOrdersStore((s) => s.updateStatus)
+  const action = nextAction(order.status)
+  const canAdvance = canAdvanceStatus(order)
+  const TypeIcon = TYPE_ICONS[order.type]
 
   return (
-    <div
-      onClick={onOpenDetail}
-      className="group !rounded-4xl p-[1.5px] transition-all duration-300 cursor-pointer"
-      style={cookingBorderStyle}
+    <Card
+      className="flex h-full cursor-pointer flex-col rounded-4xl transition-shadow hover:shadow-md"
+      onClick={onOpenDetails}
+      role="button"
+      aria-label={`Order ${order.orderNumber} details`}
     >
-      <div className="bg-white border border-olive-200 !rounded-4xl p-4 sm:p-5 md:p-6 hover:shadow-lg hover:border-olive-200 transition-all duration-300 h-full flex flex-col">
-        {/* Header: Customer Name + Order Number + Status Badge */}
-        <div className="flex justify-between items-start mb-4 gap-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-olive-900 text-lg sm:text-xl md:text-2xl lg:text-3xl leading-tight mb-1 truncate">
-              {order.customer || "Guest User"}
-            </h3>
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                onClick={(e) => e.stopPropagation()}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusConfig.colors}`}
-              >
-                <StatusIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
-                {statusConfig.label}
-              </span>
-              {isCooking && (
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide"
-                  style={{
-                    backgroundColor: `${timerColor}14`,
-                    color: timerColor,
-                  }}
-                >
-                  <ChefHat className="w-3 h-3" strokeWidth={2.5} />
-                  {cookingLabel}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex-shrink-0 px-3 py-1.5">
-            <span className="text-olive-600  font-semibold text-xs sm:text-sm tracking-wider whitespace-nowrap">
-              #{order.name.split("-").pop()}
-            </span>
-          </div>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0">
+        <div className="flex flex-col">
+          <span className="text-lg">{order.phone}</span>
+          <span className="text-xs text-muted-foreground">{order.id}</span>
         </div>
-
-        {/* Meta Info: Time + Table */}
-        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-2 pb-3 border-b border-olive-100 border-dashed-sm">
-          <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-medium">
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-olive-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="">
-              {new Date(order.created_ts).toLocaleString("en-US", {
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-olive-400 text-sm sm:text-base lg:text-lg font-medium">
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-olive-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-            <span className="">{order.table_no || order.order_type || "Takeaway"}</span>
-          </div>
+        <div className="flex flex-col items-end gap-1.5">
+          <Badge className={cn('gap-1', STATUS_BADGE_CLASSES[order.status])}>
+            {order.status === 'new' && <Sparkles className="size-3" />}
+            {STATUS_LABELS[order.status]}
+          </Badge>
+          <Badge
+            variant={order.paymentStatus === 'Unpaid' ? 'outline' : 'secondary'}
+            className={order.paymentStatus === 'Unpaid' ? 'text-destructive border-destructive/40' : ''}
+          >
+            {order.paymentStatus}
+          </Badge>
         </div>
+      </CardHeader>
 
-        {/* Order Items Section */}
-        <div className="flex-1 mb-5">
-          <div className="flex justify-between items-center mb-3 sm:mb-4">
-            {/* <span className="text-sm sm:text-base md:text-lg !font-black text-olive-800 uppercase tracking-wide">
-              Orders ({order.items?.length || 0})
-            </span> */}
-            {order.total_amount != null && (
-              <span className="text-brand-green text-lg sm:text-xl md:text-2xl">
-                ${order.total_amount.toFixed(2)}
-              </span>
-            )}
-          </div>
-          <ul className="space-y-2.5 sm:space-y-3">
-            {order.items?.slice(0, 3).map((item, i) => (
-              <li
-                key={i}
-                className="flex justify-between items-start gap-3 text-ms sm:text-base"
-              >
-                <span className="!text-olive-400 text-xl  flex-1">
-                  {/* The Multiplier: 4 x */}
-                  <span className="!text-olive-400 mr-2">
-                    {item.qty} <span className="lowercase">x</span>
-                  </span>
-
-                  {/* The Item Name/Code */}
-                  <span className="text-sm sm:text-base lg:text-xl tracking-tight">
-                    {item.item_code}
-                  </span>
-                </span>
-                {item.price != null && (
-                  <span className="text-olive-900 text-sm sm:text-base whitespace-nowrap">
-                    ${(item.price * (item.qty ?? 1)).toFixed(2)}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-          {order.items?.length > 3 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenDetail?.();
-              }}
-              className="text-brand-green text-sm sm:text-base font-bold mt-3 sm:mt-4 flex items-center gap-1.5 hover:gap-2.5 transition-all hover:underline group/more"
-            >
-              <span>+{order.items.length - 3} more items</span>
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 group-hover/more:tranolive-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          )}
+      <CardContent className="flex-1 space-y-3 ">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-1">
+          <span className="flex items-center gap-1">
+            <Clock className="size-3.5" />
+            {formatOrderDate(order.time)}, {formatOrderTime(order.time)}
+          </span>
+          <span className="flex items-center gap-1">
+            <TypeIcon className="size-3.5" />
+            {order.type}
+          </span>
         </div>
+        <Separator className='' />
 
-        {/* Action Button — hidden for cancelled/unknown orders */}
-        {actionConfig && (() => {
-          const ActionIcon = actionConfig.icon;
-          return (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (status !== "completed") onBump(order.name);
-              }}
-              disabled={status === "completed"}
-              className={`w-full sm:w-auto sm:self-start rounded-lg flex items-center justify-center gap-2.5 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-3 rounded-xl text-sm sm:text-base md:text-lg font-bold uppercase tracking-wider transition-all duration-200 active:scale-95 hover:shadow-lg shadow-md ${actionConfig.colors}`}
-            >
-              <ActionIcon className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
-              <span>{actionConfig.label}</span>
-            </button>
-          );
-        })()}
-      </div>
-    </div>
-  );
-};
+        <ul className="space-y-1 text-sm text-muted-foreground">
+          {order.items.slice(0, MAX_VISIBLE_ITEMS).map((item) => (
+            <li key={item.id}>
+              {item.qty} x {item.name}
+            </li>
+          ))}
+        </ul>
+        {order.items.length > MAX_VISIBLE_ITEMS && (
+          <p className="text-xs text-muted-foreground">
+            +{order.items.length - MAX_VISIBLE_ITEMS} more item
+            {order.items.length - MAX_VISIBLE_ITEMS > 1 ? 's' : ''}
+          </p>
+        )}
+      </CardContent>
 
-export default OrderCard;
+      {action && (
+        <CardFooter className="border-0 bg-transparent pt-0">
+          <Button
+            variant="secondary"
+            className="w-full rounded-full m-0"
+            size="lg"
+            disabled={!canAdvance}
+            onClick={(e) => {
+              e.stopPropagation()
+              updateStatus(order.id, action.next)
+            }}
+          >
+            <Play className="size-4" />
+            {canAdvance ? action.label : 'Check off all items first'}
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
+  )
+}

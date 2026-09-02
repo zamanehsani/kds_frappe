@@ -39,7 +39,7 @@ function loadFromDevServer() {
     document.head.appendChild(preamble);
 
     const viteClient = appendModuleScript(`${DEV_SERVER_ORIGIN}/@vite/client`);
-    viteClient.onload = () => appendModuleScript(`${DEV_SERVER_ORIGIN}/src/main.jsx`);
+    viteClient.onload = () => appendModuleScript(`${DEV_SERVER_ORIGIN}/src/main.tsx`);
 }
 
 async function loadFromBuiltAssets() {
